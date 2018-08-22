@@ -14,6 +14,7 @@ const port = process.env.PORT
 
 app.use(bodyParser.json())
 
+// POST /todos
 app.post('/todos', (req, res) => {
   const todo = new Todo({
     text: req.body.text,
@@ -29,6 +30,7 @@ app.post('/todos', (req, res) => {
     })
 })
 
+// GET todos
 app.get('/todos', (req, res) => {
   Todo.find()
     .then(todos => {
@@ -39,6 +41,7 @@ app.get('/todos', (req, res) => {
     })
 })
 
+// GET /todos/:id
 app.get('/todos/:id', (req, res) => {
   const id = req.params.id
 
@@ -59,6 +62,7 @@ app.get('/todos/:id', (req, res) => {
     })
 })
 
+// DELETE /todos/:id
 app.delete('/todos/:id', (req, res) => {
   const id = req.params.id
 
@@ -79,6 +83,7 @@ app.delete('/todos/:id', (req, res) => {
     })
 })
 
+// PATCH /todos/:id
 app.patch('/todos/:id', (req, res) => {
   const id = req.params.id
   const body = _.pick(req.body, ['text', 'completed']) // fetches only a subset of props on the obj
@@ -107,14 +112,18 @@ app.patch('/todos/:id', (req, res) => {
     })
 })
 
+// POSTS /users
 app.post('/users', (req, res) => {
   const body = _.pick(req.body, ['email', 'password'])
   const user = new User(body)
 
   user
     .save()
-    .then(user => {
-      res.send(user)
+    .then(() => {
+      return user.generateAuthToken()
+    })
+    .then(token => {
+      res.header('x-auth', token).send(user)
     })
     .catch(e => {
       res.status(400).send(e)
